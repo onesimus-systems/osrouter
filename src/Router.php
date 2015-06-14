@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * OSRouter is a simple HTTP router for PHP.
+ *
+ * @author Lee Keitel <keitellf@gmail.com>
+ * @copyright 2015 Lee Keitel, Onesimus Systems
+ *
+ * @license BSD 3-Clause
+ */
 namespace Onesimus\Router;
 
 class Router
@@ -53,10 +60,18 @@ class Router
      */
     public static function group(array $properties, array $routes)
     {
-        // $routes: [0] = HTTP method, [1] = pattern, [2] = controller/method route
-        $baseProperties = ['filter' => '', 'prefix' => '', 'rprefix' => ''];
+        if (isset($properties['filter'])) {
+            if (!is_array($properties['filter'])) {
+                $properties['filter'] = [$properties['filter']];
+            }
+        } else {
+            $properties['filter'] = [];
+        }
+
+        $baseProperties = ['prefix' => '', 'rprefix' => ''];
         $properties = array_merge($baseProperties, $properties);
 
+        // $routes: [0] = HTTP method, [1] = pattern, [2] = controller/method route
         foreach ($routes as $route) {
             $httpmethod = $route[0];
 
@@ -94,7 +109,7 @@ class Router
     /**
      *  Initiate the routing for the given URL
      */
-    public static function route(Http\Request $request, $test = null)
+    public static function route(Http\Request $request)
     {
         $path = str_replace(rtrim($request->get('SERVER_NAME'), '/'), '', $request->FULL_URI);
         $key = $request->getMethod().'@'.$path;
@@ -109,12 +124,8 @@ class Router
             $matchedRoute = self::$routes[$keyAny];
         } else {
             foreach (self::$routes as $key2 => $route) {
-                if ($route->getMethod() != $request->getMethod() && $route->getMethod() != 'ANY') {
+                if ($route->getMethod() != 'ANY' && $route->getMethod() != $request->getMethod()) {
                     continue;
-                }
-
-                if ($test) {
-                    echo 'Route: '.$key2.' Score: '.$route->getScore($path).' Current: '.$matchedScore.'<br>';
                 }
 
                 $score = $route->getScore($path);
@@ -125,7 +136,9 @@ class Router
             }
         }
 
-        $matchedRoute->setUrl($path);
+        if ($matchedRoute) {
+            $matchedRoute->setUrl($path);
+        }
         return $matchedRoute;
     }
 
