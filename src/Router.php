@@ -128,7 +128,7 @@ class Router
                     continue;
                 }
 
-                $score = $route->getScore($path);
+                $score = $route->getScore($path, $request->getMethod());
                 if ($score > $matchedScore) {
                     $matchedRoute = $route;
                     $matchedScore = $score;
