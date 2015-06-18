@@ -1,6 +1,8 @@
 {
     "name": "onesimus-systems/osrouter",
-    "version": "0.6.0",
+    "description": "A simple, easy to use router for PHP web applications",
+    "keywords": ["router", "http"],
+    "version": "1.0.0",
     "type": "library",
     "license": "BSD-3-Clause",
 
