@@ -38,21 +38,25 @@ class Route
      *
      * @param string $httpmethod Method this route responds to
      * @param string $pattern    URI pattern this route matches
+     * @param string/Closure $callback Class@method or closure to call on dispatch
      * @param array/string $options
-     *        If a string, $options is the controller and method, or closure to call on dispatch.
-     *        If an array, the key 'use' is the controller/method or closure, and 'filter'
-     *            is an array of filter(s) to run before dispatch
+     *        If a string, $options is a single filter
+     *        If an array, the key 'filter' is an array of filter(s) to run before dispatch
      */
-    public function __construct($httpmethod, $pattern, $options)
+    public function __construct($httpmethod, $pattern, $callback, $options = ['filter' => []])
     {
-        if (!is_array($options)) {
-            $options = ['use' => $options, 'filter' => []];
+        if (!$options || !is_array($options)) {
+            $options = ['filter' => [$options]];
         }
 
-        if ($options['use'] instanceof \Closure) {
-            $this->callable = $options['use'];
+        if (!is_array($options['filter'])) {
+            $options['filter'] = [$options['filter']];
+        }
+
+        if ($callback instanceof \Closure) {
+            $this->callable = $callback;
         } else {
-            list($class, $method) = explode('@', $options['use'], 2);
+            list($class, $method) = explode('@', $callback, 2);
             $this->class = $class;
             $this->method = $method;
         }
@@ -230,8 +234,11 @@ class Route
         // Process filters
         if ($this->filter) {
             foreach ($this->filter as $filter) {
+                if (!Router::hasFilter($filter)) {
+                    throw new Exceptions\FailedFilterException("Filter '{$filter}' not registered");
+                }
                 if (!Router::handleFilter($filter)) {
-                    throw new \Exception("Filter failed");
+                    throw new Exceptions\FailedFilterException("Filter '{$filter}' failed");
                 }
             }
         }
@@ -249,15 +256,15 @@ class Route
 
         // If no Closure, instantiate class
         if (!$this->class || !class_exists($this->class)) {
-            throw new \Exception("Controller '{$this->class}' wasn't found.");
+            throw new Exceptions\RouteException("Controller '{$this->class}' wasn't found.");
         }
 
         $controller = new $this->class($params);
         // Call class method
-        if (method_exists($controller, $this->method)) {
+        if (method_exists($controller, $this->method) && is_callable([$controller, $this->method])) {
             return call_user_func_array(array($controller, $this->method), $vars);
         } else {
-            throw new \Exception("Method '{$method}' wasn't found in Class '{$class}'.");
+            throw new Exceptions\RouteException("Method '{$this->method}' wasn't found in Class '{$this->class}' or is not public.");
         }
     }
 }

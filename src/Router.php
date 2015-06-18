@@ -11,12 +11,13 @@ namespace Onesimus\Router;
 
 class Router
 {
-    private static $instance;
-    private static $routes = [];
+    protected static $instance;
+    protected static $routes = [];
+    protected static $_404route;
 
-    private static $filters = [];
+    protected static $filters = [];
 
-    private function __construct() {}
+    protected function __construct() {}
 
     public static function getInstance()
     {
@@ -29,18 +30,18 @@ class Router
     /**
      *  Register route for a GET request
      */
-    public static function get($url, $options)
+    public static function get($url, $callback, $options = [])
     {
-        self::register('GET', $url, $options);
+        self::register('GET', $url, $callback, $options);
         return;
     }
 
     /**
      *  Register a route for a POST request
      */
-    public static function post($url, $options)
+    public static function post($url, $callback, $options = [])
     {
-        self::register('POST', $url, $options);
+        self::register('POST', $url, $callback, $options);
         return;
 
     }
@@ -48,11 +49,23 @@ class Router
     /**
      *  Register a route for any type of HTTP request
      */
-    public static function any($url, $options)
+    public static function any($url, $callback, $options = [])
     {
-        self::register('ANY', $url, $options);
+        self::register('ANY', $url, $callback, $options);
         return;
 
+    }
+
+    /**
+     * Register a route to be returned if a 404 is encounted
+     *
+     * @param  string/Closure $callback Class@method or Closure to call
+     * @param  array  $options
+     */
+    public static function register404Route($callback, $options = [])
+    {
+        self::$_404route = new Route('ANY', '/404', $callback, $options);
+        return;
     }
 
     /**
@@ -60,6 +73,7 @@ class Router
      */
     public static function group(array $properties, array $routes)
     {
+        // Translate a single filter to an array of one filter
         if (isset($properties['filter'])) {
             if (!is_array($properties['filter'])) {
                 $properties['filter'] = [$properties['filter']];
@@ -80,22 +94,21 @@ class Router
             }
 
             $pattern = $properties['prefix'].$route[1];
-            $controller = $route[2];
+            $callback = $properties['rprefix'].$route[2];
             $options = [
-                'use' => $properties['rprefix'].$controller,
                 'filter' => $properties['filter']
             ];
-            self::$httpmethod($pattern, $options);
+            self::$httpmethod($pattern, $callback, $options);
         }
     }
 
     /**
      *  Common register function, adds route to $routeList
      */
-    private static function register($method, $url, $options)
+    private static function register($method, $url, $callback, $options = [])
     {
         $key = $method.'@'.$url;
-        self::$routes[$key] = new Route($method, $url, $options);
+        self::$routes[$key] = new Route($method, $url, $callback, $options);
     }
 
     /**
@@ -138,17 +151,38 @@ class Router
 
         if ($matchedRoute) {
             $matchedRoute->setUrl($path);
+        } elseif (self::$_404route) {
+            $matchedRoute = self::$_404route;
+        } else {
+            throw new Exceptions\RouteException('Route not found');
         }
         return $matchedRoute;
     }
 
+    /**
+     * Register a filter with the router
+     *
+     * @param  string   $name     Name of the filter
+     * @param  \Closure $callback Function to execute
+     */
     public static function filter($name, \Closure $callback)
     {
         self::$filters[$name] = $callback;
     }
 
     /**
-     *  Perform any before actions on the route
+     * Does the router have a particular filter
+     *
+     * @param  string  $name Name of filter to check
+     * @return boolean
+     */
+    public static function hasFilter($name)
+    {
+        return array_key_exists($name, self::$filters);
+    }
+
+    /**
+     * Execute filter $action
      */
     public static function handleFilter($action = '')
     {
@@ -156,7 +190,7 @@ class Router
             return true;
         }
 
-        if (array_key_exists($action, self::$filters)) {
+        if (self::hasFilter($action)) {
             $callback = self::$filters[$action];
             return $callback();
         }
