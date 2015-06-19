@@ -45,7 +45,11 @@ class Route
      */
     public function __construct($httpmethod, $pattern, $callback, $options = ['filter' => []])
     {
-        if (!$options || !is_array($options)) {
+        if (!$options) {
+            $options = ['filter' => []];
+        }
+
+        if (!is_array($options)) {
             $options = ['filter' => [$options]];
         }
 
