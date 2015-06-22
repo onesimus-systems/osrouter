@@ -58,15 +58,15 @@ class Request
         } else {
             $env = [];
 
-            $env['SERVER_ADDR'] = $this->isSet($_SERVER['SERVER_ADDR']);
-            $env['SERVER_NAME'] = $this->isSet($_SERVER['SERVER_NAME']);
-            $env['SERVER_PORT'] = $this->isSet($_SERVER['SERVER_PORT']);
-            $env['REMOTE_ADDR'] = $this->isSet($_SERVER['REMOTE_ADDR']);
-            $env['REQUEST_METHOD'] = $this->isSet($_SERVER['REQUEST_METHOD']);
-            $env['SCRIPT_FILENAME'] = $this->isSet($_SERVER['SCRIPT_FILENAME']);
+            $env['SERVER_ADDR'] = $this->hasProperty($_SERVER['SERVER_ADDR']);
+            $env['SERVER_NAME'] = $this->hasProperty($_SERVER['SERVER_NAME']);
+            $env['SERVER_PORT'] = $this->hasProperty($_SERVER['SERVER_PORT']);
+            $env['REMOTE_ADDR'] = $this->hasProperty($_SERVER['REMOTE_ADDR']);
+            $env['REQUEST_METHOD'] = $this->hasProperty($_SERVER['REQUEST_METHOD']);
+            $env['SCRIPT_FILENAME'] = $this->hasProperty($_SERVER['SCRIPT_FILENAME']);
             $env['REQUEST_URI'] = explode('?', $_SERVER['REQUEST_URI'])[0];
             $env['URL_SCHEME'] = (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') ? 'http' : 'https';
-            $env['QUERY_STRING'] = $this->isSet($_SERVER['QUERY_STRING']);
+            $env['QUERY_STRING'] = $this->hasProperty($_SERVER['QUERY_STRING']);
 
             if ($env['SERVER_PORT'] !== 80 && $env['SERVER_PORT'] !== 443) {
                 // Normal ports
@@ -88,7 +88,7 @@ class Request
         }
     }
 
-    private function isSet($var, $default = '')
+    private function hasProperty($var, $default = '')
     {
         return isset($var) ? $var : $default;
     }
