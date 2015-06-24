@@ -78,7 +78,7 @@ class Response
     {
         $this->setBody($body);
         $this->status = $status;
-        $this->headers = new Headers(['Content-Type', 'text/html']);
+        $this->headers = new Headers([['Content-Type', 'text/html']]);
         $this->headers->replace($headers);
     }
 
