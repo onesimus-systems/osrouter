@@ -253,7 +253,7 @@ class Route
         // Call Closure if available
         if (!is_null($this->callable)) {
             if ($params) {
-                $vars = array_unshift($vars, $params);
+                array_unshift($vars, $params);
             }
             return call_user_func_array($this->callable, $vars);
         }
