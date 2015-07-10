@@ -68,14 +68,14 @@ class Request
             $env['URL_SCHEME'] = (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') ? 'http' : 'https';
             $env['QUERY_STRING'] = $this->hasProperty($_SERVER['QUERY_STRING']);
 
-            if ($env['SERVER_PORT'] !== 80 && $env['SERVER_PORT'] !== 443) {
-                // Normal ports
-                $env['FULL_URI'] = $env['URL_SCHEME'] . '://' . $env['SERVER_NAME'] . $env['REQUEST_URI'];
-            } else {
+            if ($env['SERVER_PORT'] != 80 && $env['SERVER_PORT'] != 443) {
                 // Custom ports
                 $env['FULL_URI'] = $env['URL_SCHEME'] . '://' .
                                     rtrim($env['SERVER_NAME'],'/') . ':' . $env['SERVER_PORT']
                                     . $env['REQUEST_URI'];
+            } else {
+                // Normal ports
+                $env['FULL_URI'] = $env['URL_SCHEME'] . '://' . $env['SERVER_NAME'] . $env['REQUEST_URI'];
             }
 
             $rawInput = @file_get_contents('php://input');
