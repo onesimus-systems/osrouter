@@ -124,7 +124,7 @@ class Router
      */
     public static function route(Http\Request $request)
     {
-        $path = str_replace(rtrim($request->get('SERVER_NAME'), '/'), '', $request->FULL_URI);
+        $path = $request->REQUEST_URI;
         $key = $request->getMethod().'@'.$path;
         $keyAny = 'ANY@'.$path;
 
