@@ -74,6 +74,8 @@ class Request
                 $rawInput = '';
             }
             $env['INPUT'] = $rawInput;
+            $env['POST'] = $_POST;
+            $env['GET'] = $_GET;
 
             $this->properties = $env;
             $this->headers = Headers::fromEnvironment();
@@ -107,15 +109,6 @@ class Request
 
     public function postParam($key = null, $default = null)
     {
-        if (!isset($this->properties['POST'])) {
-            $output = array();
-            if (function_exists('mb_parse_str')) {
-                mb_parse_str($this->properties['INPUT'], $output);
-            } else {
-                parse_str($this->properties['INPUT'], $output);
-            }
-            $this->properties['POST'] = $output;
-        }
         if ($key) {
             if (array_key_exists($key, $this->properties['POST'])) {
                 return urldecode($this->properties['POST'][$key]);
@@ -129,15 +122,6 @@ class Request
 
     public function getParam($key = null, $default = null)
     {
-        if (!isset($this->properties['GET'])) {
-            $output = array();
-            if (function_exists('mb_parse_str')) {
-                mb_parse_str($this->properties['QUERY_STRING'], $output);
-            } else {
-                parse_str($this->properties['QUERY_STRING'], $output);
-            }
-            $this->properties['GET'] = $output;
-        }
         if ($key) {
             if (array_key_exists($key, $this->properties['GET'])) {
                 return urldecode($this->properties['GET'][$key]);
@@ -147,21 +131,6 @@ class Request
         } else {
             return $this->properties['GET'];
         }
-    }
-
-    public function put($key = null, $default = null)
-    {
-        return $this->post($key, $default);
-    }
-
-    public function patch($key = null, $default = null)
-    {
-        return $this->post($key, $default);
-    }
-
-    public function delete($key = null, $default = null)
-    {
-        return $this->post($key, $default);
     }
 
     public function getMethod()
