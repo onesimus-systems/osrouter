@@ -23,6 +23,8 @@ class Request
 
     private $properties;
 
+    public $headers;
+
     public static function getRequest()
     {
         if (is_null(self::$instance)) {
@@ -74,6 +76,7 @@ class Request
             $env['INPUT'] = $rawInput;
 
             $this->properties = $env;
+            $this->headers = Headers::fromEnvironment();
         }
     }
 
