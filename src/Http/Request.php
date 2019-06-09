@@ -25,6 +25,8 @@ class Request
 
     public $headers;
 
+    public $context = []; // Used for arbitrary data while handling the request.
+
     public static function getRequest()
     {
         if (is_null(self::$instance)) {
