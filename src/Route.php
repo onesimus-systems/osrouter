@@ -266,7 +266,7 @@ class Route
         $controller = new $this->class($params);
         // Call class method
         if (method_exists($controller, $this->method) && is_callable([$controller, $this->method])) {
-            return call_user_func_array(array($controller, $this->method), $vars);
+            return call_user_func_array([$controller, $this->method], $vars);
         } else {
             throw new Exceptions\RouteException("Method '{$this->method}' wasn't found in Class '{$this->class}' or is not public.");
         }

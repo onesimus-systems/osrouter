@@ -20,19 +20,19 @@ class Headers implements \IteratorAggregate
 
     public function replace(array $data)
     {
-        foreach ($data as $header) {
-            $this->set($header[0], $header[1]);
+        foreach ($data as $key => $value) {
+            $this->set($key, $value);
         }
     }
 
     public function get($header)
     {
-        return $this->headers[$this->normalizeKey[$header]];
+        return $this->headers[static::normalizeKey($header)];
     }
 
     public function set($header, $data)
     {
-        $this->headers[$this->normalizeKey($header)] = $data;
+        $this->headers[static::normalizeKey($header)] = $data;
     }
 
     public function __get($header)
@@ -47,7 +47,7 @@ class Headers implements \IteratorAggregate
 
     public function __isset($header)
     {
-        return isset($this->headers[$this->normalizeKey($header)]);
+        return isset($this->headers[static::normalizeKey($header)]);
     }
 
     public function __unset($header)
@@ -57,7 +57,7 @@ class Headers implements \IteratorAggregate
 
     public function remove($header)
     {
-        unset($this->headers[$this->normalizeKey($header)]);
+        unset($this->headers[static::normalizeKey($header)]);
     }
 
     /**
@@ -65,7 +65,7 @@ class Headers implements \IteratorAggregate
      * @param  string $key
      * @return string
      */
-    protected function normalizeKey($key)
+    protected static function normalizeKey($key)
     {
         $key = strtolower($key);
         $key = str_replace(array('-', '_'), ' ', $key);
@@ -79,5 +79,21 @@ class Headers implements \IteratorAggregate
     public function getIterator()
     {
         return new \ArrayIterator($this->headers);
+    }
+
+    public static function fromEnvironment()
+    {
+        $headers = [];
+
+        foreach($_SERVER as $key => $value) {
+            if (substr($key, 0, 5) <> 'HTTP_') {
+                continue;
+            }
+
+            $header = static::normalizeKey(substr($key, 5));
+            $headers[$header] = $value;
+        }
+
+        return new self($headers);
     }
 }

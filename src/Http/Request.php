@@ -23,6 +23,10 @@ class Request
 
     private $properties;
 
+    public $headers;
+
+    public $context = []; // Used for arbitrary data while handling the request.
+
     public static function getRequest()
     {
         if (is_null(self::$instance)) {
@@ -44,7 +48,6 @@ class Request
             'REMOTE_ADDR' => '127.0.0.1',
             'URL_SCHEME' => 'http',
             'REQUEST_URI' => '',
-            'FULL_URI' => ''
         ];
         self::$instance = new self(array_merge($defaults, $settings));
 
@@ -68,23 +71,16 @@ class Request
             $env['URL_SCHEME'] = (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') ? 'http' : 'https';
             $env['QUERY_STRING'] = $this->hasProperty($_SERVER['QUERY_STRING']);
 
-            if ($env['SERVER_PORT'] != 80 && $env['SERVER_PORT'] != 443) {
-                // Custom ports
-                $env['FULL_URI'] = $env['URL_SCHEME'] . '://' .
-                                    rtrim($env['SERVER_NAME'],'/') . ':' . $env['SERVER_PORT']
-                                    . $env['REQUEST_URI'];
-            } else {
-                // Normal ports
-                $env['FULL_URI'] = $env['URL_SCHEME'] . '://' . $env['SERVER_NAME'] . $env['REQUEST_URI'];
-            }
-
             $rawInput = @file_get_contents('php://input');
             if (!$rawInput) {
                 $rawInput = '';
             }
             $env['INPUT'] = $rawInput;
+            $env['POST'] = $_POST;
+            $env['GET'] = $_GET;
 
             $this->properties = $env;
+            $this->headers = Headers::fromEnvironment();
         }
     }
 
@@ -115,15 +111,6 @@ class Request
 
     public function postParam($key = null, $default = null)
     {
-        if (!isset($this->properties['POST'])) {
-            $output = array();
-            if (function_exists('mb_parse_str')) {
-                mb_parse_str($this->properties['INPUT'], $output);
-            } else {
-                parse_str($this->properties['INPUT'], $output);
-            }
-            $this->properties['POST'] = $output;
-        }
         if ($key) {
             if (array_key_exists($key, $this->properties['POST'])) {
                 return urldecode($this->properties['POST'][$key]);
@@ -137,15 +124,6 @@ class Request
 
     public function getParam($key = null, $default = null)
     {
-        if (!isset($this->properties['GET'])) {
-            $output = array();
-            if (function_exists('mb_parse_str')) {
-                mb_parse_str($this->properties['QUERY_STRING'], $output);
-            } else {
-                parse_str($this->properties['QUERY_STRING'], $output);
-            }
-            $this->properties['GET'] = $output;
-        }
         if ($key) {
             if (array_key_exists($key, $this->properties['GET'])) {
                 return urldecode($this->properties['GET'][$key]);
@@ -155,21 +133,6 @@ class Request
         } else {
             return $this->properties['GET'];
         }
-    }
-
-    public function put($key = null, $default = null)
-    {
-        return $this->post($key, $default);
-    }
-
-    public function patch($key = null, $default = null)
-    {
-        return $this->post($key, $default);
-    }
-
-    public function delete($key = null, $default = null)
-    {
-        return $this->post($key, $default);
     }
 
     public function getMethod()

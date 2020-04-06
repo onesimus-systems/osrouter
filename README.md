@@ -42,6 +42,8 @@ $route->dispatch($app);
 
 The main methods are `Router::get()`, `::post()`, and `::any()`. The signature for each is `($pattern, $callback, $options = [])`. $pattern is the URI pattern the route will match using the format `/static/{variable}/{?option-variable}`. $callback is either a string such as `Controller@method` or a closure function. $options can be a single string in which case it will interpreted as a single filter, or it can be an array with the syntax `['filter' => ['filter1', 'filter2']]`. The outer array is to allow for extra options that may be added later on.
 
+To route in an application located in a subdirectory of the webserver, you'll need to remove the directory prefix from the REQUEST_URI field in the Request object. For example, if the base of your application was located at `http://example.com/blog`, you will need to strip "/blog" from the request uri before processing a route. Otherwise, all routes will be checked against "/blog/something" instead of just "/something".
+
 You can also register routes in a group
 
 ```php

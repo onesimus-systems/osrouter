@@ -33,7 +33,6 @@ class Router
     public static function get($url, $callback, $options = [])
     {
         self::register('GET', $url, $callback, $options);
-        return;
     }
 
     /**
@@ -42,8 +41,30 @@ class Router
     public static function post($url, $callback, $options = [])
     {
         self::register('POST', $url, $callback, $options);
-        return;
+    }
 
+    /**
+     *  Register a route for a PUT request
+     */
+    public static function put($url, $callback, $options = [])
+    {
+        self::register('PUT', $url, $callback, $options);
+    }
+
+    /**
+     *  Register a route for a PATCH request
+     */
+    public static function patch($url, $callback, $options = [])
+    {
+        self::register('PATCH', $url, $callback, $options);
+    }
+
+    /**
+     *  Register a route for a DELETE request
+     */
+    public static function delete($url, $callback, $options = [])
+    {
+        self::register('DELETE', $url, $callback, $options);
     }
 
     /**
@@ -52,8 +73,6 @@ class Router
     public static function any($url, $callback, $options = [])
     {
         self::register('ANY', $url, $callback, $options);
-        return;
-
     }
 
     /**
@@ -98,7 +117,7 @@ class Router
             $options = [
                 'filter' => $properties['filter']
             ];
-            self::$httpmethod($pattern, $callback, $options);
+            self::register(strtoupper($httpmethod), $pattern, $callback, $options);
         }
     }
 
@@ -124,7 +143,7 @@ class Router
      */
     public static function route(Http\Request $request)
     {
-        $path = str_replace(rtrim($request->get('SERVER_NAME'), '/'), '', $request->FULL_URI);
+        $path = $request->REQUEST_URI;
         $key = $request->getMethod().'@'.$path;
         $keyAny = 'ANY@'.$path;
 
