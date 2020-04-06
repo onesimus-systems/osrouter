@@ -1,15 +1,12 @@
-OSRouter
---------
+## OSRouter
 
 OSRouter is a simple, fast HTTP router for PHP. It can perform simple routes with variable and optional URL parts. OSRouter can extract parts of a URL as variable that can be passed to a closure or a controller method.
 
-Requirements
-------------
+## Requirements
 
 - PHP >= 5.4.0
 
-Usage
------
+## Usage
 
 ```php
 use \Onesimus\Router\Router;
@@ -26,6 +23,8 @@ Router::post('/api/{module}/{?method}', function() {
 	// Closure for route
 	return;
 });
+// Match rest of URL
+Router::get('/api/{*rest}', 'ApiController@serve');
 
 // Get request object for current HTTP request
 $request = Request::getRequest();
@@ -40,7 +39,7 @@ $route->dispatch();
 $route->dispatch($app);
 ```
 
-The main methods are `Router::get()`, `::post()`, and `::any()`. The signature for each is `($pattern, $callback, $options = [])`. $pattern is the URI pattern the route will match using the format `/static/{variable}/{?option-variable}`. $callback is either a string such as `Controller@method` or a closure function. $options can be a single string in which case it will interpreted as a single filter, or it can be an array with the syntax `['filter' => ['filter1', 'filter2']]`. The outer array is to allow for extra options that may be added later on.
+The main methods are `Router::get()`, `::post()`, and `::any()`. The signature for each is `($pattern, $callback, $options = [])`. \$pattern is the URI pattern the route will match using the format `/static/{variable}/{?option-variable}`. \$callback is either a string such as `Controller@method` or a closure function. \$options can be a single string in which case it will interpreted as a single filter, or it can be an array with the syntax `['filter' => ['filter1', 'filter2']]`. The outer array is to allow for extra options that may be added later on.
 
 To route in an application located in a subdirectory of the webserver, you'll need to remove the directory prefix from the REQUEST_URI field in the Request object. For example, if the base of your application was located at `http://example.com/blog`, you will need to strip "/blog" from the request uri before processing a route. Otherwise, all routes will be checked against "/blog/something" instead of just "/something".
 
@@ -53,14 +52,13 @@ Router::group(['prefix' => '/admin'],
 );
 ```
 
-Groups are defined using the `Router::group(array $options, array $routes)` method. $options is a keyed array with the keys 'filter', 'prefix', and 'rprefix'. 'Filter' is an array of filters that apply to the group. A single filter can be given as a string as well. 'Prefix' is a prefix added to the HTTP pattern in each group. In the example above, the routes will be `/admin/groups/{?id}` and `/admin/users/{?id}`. 'Rprefix' is prepended to each controller statement. For example, if `'rprefix' => '\Namespace\Admin\'` was added to the group above, the controller statements would be `\Namespace\Admin\Controller@groups` and `\Namespace\Admin\Controller@user`.
+Groups are defined using the `Router::group(array $options, array $routes)` method. \$options is a keyed array with the keys 'filter', 'prefix', and 'rprefix'. 'Filter' is an array of filters that apply to the group. A single filter can be given as a string as well. 'Prefix' is a prefix added to the HTTP pattern in each group. In the example above, the routes will be `/admin/groups/{?id}` and `/admin/users/{?id}`. 'Rprefix' is prepended to each controller statement. For example, if `'rprefix' => '\Namespace\Admin\'` was added to the group above, the controller statements would be `\Namespace\Admin\Controller@groups` and `\Namespace\Admin\Controller@user`.
 
 **Note**: Closures cannot be assigned to a route defined in a group. To assign a closure, assign the route separately.
 
 You can define a 404 route using the method `Router::register404Route($callback, $options = [])`. If no 404 route is defined and a route isn't found, a `RouteException` will be thrown.
 
-Filters
--------
+## Filters
 
 Filters can be defined and assigned to routes. Routes can have multiple filters, they will be handled in the order they're defined on the route. If all filters return a non-falsey value, the route will be green-lit and the dispatch will continue. Otherwise a `FailedFilterException` will be thrown. Also, a `RouteException` will be thrown if the filter isn't defined.
 
@@ -87,8 +85,6 @@ Router::get('/admin', 'AdminController@index', ['auth', 'inAdminGroup']);
 
 In this case both filters must return truthy.
 
-Router\Http\Request
--------------------
+## Router\Http\Request
 
-Router\Http\Response
---------------------
+## Router\Http\Response

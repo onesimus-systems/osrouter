@@ -124,9 +124,11 @@ class Route
     {
         $url = explode('/', $url);
         $pattern = explode('/', $this->pattern);
-        $matches = true;
 
-        if (count($url) > count($pattern)) {
+        $lastElement = $pattern[count($pattern) - 1];
+        $isCatchAll = ($lastElement === '*' || substr($lastElement, 0, 2) === '{*');
+
+        if (($isCatchAll && count($url) < count($pattern) -1) || (!$isCatchAll && count($url) > count($pattern))) {
             return false;
         }
 
@@ -137,7 +139,7 @@ class Route
                     continue;
                 } else {
                     // Piece not in URL and is required
-                    return false;
+                    return $isCatchAll;
                 }
             }
 
@@ -147,7 +149,7 @@ class Route
             }
         }
 
-        return $matches;
+        return true;
     }
 
     /**
@@ -174,13 +176,22 @@ class Route
         $pattern = explode('/', $this->pattern);
         $score = 0;
 
-        if (count($url) > count($pattern)) {
+        $lastElement = $pattern[count($pattern) - 1];
+        $isCatchAll = ($lastElement === '*' || substr($lastElement, 0, 2) === '{*');
+
+        if (($isCatchAll && count($url) < count($pattern) -1) || (!$isCatchAll && count($url) > count($pattern))) {
             return 0;
         }
 
         foreach ($pattern as $index => $value) {
             $isVar = substr($value, 0, 1) === '{';
             $isOpt = substr($value, 0, 2) === '{?';
+            $isRest = substr($value, 0, 2) === '{*';
+
+            if ($isRest) {
+                $score += 100;
+                // break;
+            }
 
             if (!isset($url[$index])) {
                 if ($isOpt) {
@@ -216,6 +227,11 @@ class Route
         $url = explode('/', $url);
         $vars = [];
         foreach ($pattern as $key => $value) {
+            if (substr($value, 0, 2) === '{*') {
+                $vars []= implode('/', array_splice($url, $key));
+                break;
+            }
+
             if (substr($value, 0, 1) === '{' || substr($value, 0, 2) === '{?') {
                 $vars []= isset($url[$key]) ? $url[$key] : null;
             }

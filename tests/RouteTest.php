@@ -91,6 +91,17 @@ class RouteTests extends TestCase
         $this->assertEquals(['dash', 'chat'], $route->getVars('/home/dash/chat'));
     }
 
+    public function testCatchAllPatternMatch()
+    {
+        $route = new MockRoute('GET', '/home/{*board}', 'homeController@main');
+        $this->assertTrue($route->matches('/home/dash', 'get'));
+        $this->assertFalse($route->matches('/home/dash', 'post'));
+        $this->assertTrue($route->matches('/home', 'get'));
+        $this->assertTrue($route->matches('/home/dash/something', 'get'));
+
+        $this->assertEquals(['dash/something'], $route->getVars('/home/dash/something'));
+    }
+
     public function testDispatchWithClosure()
     {
         $route = new MockRoute('GET', '/home', function() {
@@ -113,6 +124,7 @@ class RouteTests extends TestCase
     {
         $route = new MockRoute('ANY', '/home/{board}/{?area}', 'homeController@main');
         $route2 = new MockRoute('ANY', '/home/dash/{board}/{?area}', 'homeController@main');
+        $route3 = new MockRoute('ANY', '/home/{*rest}', 'homeController@main');
 
         // Doesn't match route
         $this->assertEquals(0, $route->getScore('/home', 'get'));
@@ -122,6 +134,8 @@ class RouteTests extends TestCase
         $this->assertEquals(6, $route->getScore('/home/dash/chat', 'get'));
         // Doesn't match route
         $this->assertEquals(0, $route->getScore('/home/dash/chat/users', 'get'));
+        // Route with catchall
+        $this->assertEquals(105, $route3->getScore('/home/dash', 'get'));
 
         // Test longer static routes take presidence
         $path = '/home/dash/status';
