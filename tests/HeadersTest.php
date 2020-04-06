@@ -2,6 +2,7 @@
 namespace Onesimus\Router\Tests;
 
 use Onesimus\Router\Http\Headers;
+use PHPUnit\Framework\TestCase;
 
 class HeadersInternal extends Headers
 {
@@ -11,7 +12,7 @@ class HeadersInternal extends Headers
     }
 }
 
-class HeadersTests extends \PHPUnit_Framework_TestCase
+class HeadersTests extends TestCase
 {
     public function testCreationWithControllerClass()
     {

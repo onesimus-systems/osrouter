@@ -2,6 +2,7 @@
 namespace Onesimus\Router\Tests;
 
 use Onesimus\Router;
+use PHPUnit\Framework\TestCase;
 
 // Mock class to access protected
 // properties of the Route class
@@ -29,7 +30,7 @@ class Controller
     }
 }
 
-class RouteTests extends \PHPUnit_Framework_TestCase
+class RouteTests extends TestCase
 {
     public function testCreationWithControllerClass()
     {
